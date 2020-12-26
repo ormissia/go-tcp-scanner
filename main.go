@@ -9,41 +9,43 @@ import (
 )
 
 var (
-	ip                 string = "127.0.0.1" //要扫描的ip,默认为本机ip
-	startPort, endPort int                  //要扫描的开始和结束端口
+	ip = "127.0.0.1" //要扫描的ip,默认为本机ip
 )
 
 func main() {
 	//获取从命令行输入的参数（从第二个参数开始,到第四个参数结束）
-	configs:=os.Args[1:4]
+	configs := os.Args[1:4]
 	ip = configs[0]
-	startPort,err := strconv.Atoi(configs[1])
+	startPort, err := strconv.Atoi(configs[1])
 	if err != nil {
 		fmt.Println("请输入正确的端口号")
 		panic(err)
 	}
-	endPort,err := strconv.Atoi(configs[2])
+	endPort, err := strconv.Atoi(configs[2])
 	if err != nil {
 		fmt.Println("请输入正确的端口号")
 		panic(err)
 	}
-	//创建缓冲区为100的channel
-	ports := make(chan int, 1000)
+	//创建缓冲区为5000的channel
+	ports := make(chan int, 5000)
 	defer close(ports)
 	result := make(chan int)
 	defer close(result)
 	var openPorts []int
 
+	//创建worker
 	for i := 0; i < cap(ports); i++ {
 		go worker(ports, result)
 	}
 
+	//另起一个线程分发任务
 	go func() {
 		for i := startPort; i < endPort; i++ {
 			ports <- i
 		}
 	}()
 
+	//接收返回结果
 	for i := startPort; i < endPort; i++ {
 		port := <-result
 		//port不为0时为打开的端口
@@ -67,13 +69,13 @@ func worker(ports <-chan int, result chan<- int) {
 		address := fmt.Sprintf("%s:%d", ip, port)
 		conn, err := net.Dial("tcp", address)
 		if err != nil {
-			fmt.Printf("%d端口未开放\n",port)
+			fmt.Printf("%d端口未开放\n", port)
 			//端口未则打开传0
 			result <- 0
 			continue
 		}
 		conn.Close()
-		fmt.Printf("%d端口已开放\n",port)
+		fmt.Printf("%d端口已开放\n", port)
 		//端口打开则传端口值
 		result <- port
 	}
@@ -103,7 +105,7 @@ func worker(ports <-chan int, result chan<- int) {
 		go func(j int) {
 			//每一个goroutine执行完后减一
 			defer wg.Done()
-			address := fmt.Sprintf("192.168.0.104:%d", j)
+			address := fmt.Sprintf("127.0.0.1:%d", j)
 			conn, err := net.Dial("tcp", address)
 			if err != nil {
 				fmt.Printf("%s 关闭了\n", address)
