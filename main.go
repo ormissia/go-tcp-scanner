@@ -6,16 +6,24 @@ import (
 	"os"
 	"sort"
 	"strconv"
+	"tcp-scanner/util"
 )
 
 var (
-	ip = "127.0.0.1" //要扫描的ip,默认为本机ip
+	address = "127.0.0.1" //要扫描的ip,默认为本机ip
 )
 
 func main() {
 	//获取从命令行输入的参数（从第二个参数开始,到第四个参数结束）
 	configs := os.Args[1:4]
-	ip = configs[0]
+	address = configs[0]
+	//使用正则匹配参数是否时域名或者IP
+	isIp := util.StringRegexp(util.RegexpExpressionIP, address)
+	isDomainName := util.StringRegexp(util.RegexpExpressionDomainName, address)
+	//当参数既不是IP也不是域名时终止
+	if !isIp && !isDomainName {
+		panic("请正确输入需要扫描的地址")
+	}
 	startPort, err := strconv.Atoi(configs[1])
 	if err != nil {
 		fmt.Println("请输入正确的端口号")
@@ -66,7 +74,7 @@ func main() {
 
 func worker(ports <-chan int, result chan<- int) {
 	for port := range ports {
-		address := fmt.Sprintf("%s:%d", ip, port)
+		address := fmt.Sprintf("%s:%d", address, port)
 		conn, err := net.Dial("tcp", address)
 		if err != nil {
 			fmt.Printf("%d端口未开放\n", port)
