@@ -39,6 +39,7 @@ var (
 	}
 )
 
+//普通正则匹配方法测试
 func TestStringRegexp(t *testing.T) {
 	//测试IP正则
 	for _, tt := range testDateIP {
@@ -55,6 +56,7 @@ func TestStringRegexp(t *testing.T) {
 	}
 }
 
+//闭包正则匹配方法测试
 func TestRegexpBase(t *testing.T) {
 	//测试IP正则
 	for _, tt := range testDateIP {
@@ -70,5 +72,20 @@ func TestRegexpBase(t *testing.T) {
 		if matched := regexpDomainName(tt.toBeTestString); matched != tt.matched {
 			t.Errorf("TestStringRegexp(RegexpExpressionDomainName,%s),got %t, but %t", tt.toBeTestString, matched, tt.matched)
 		}
+	}
+}
+
+//普通正则匹配方法性能测试
+func BenchmarkStringRegexp(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		StringRegexp(RegexpExpressionIP, "127.0.0.1")
+	}
+}
+
+//闭包正则匹配方法性能测试
+func BenchmarkRegexpBase(b *testing.B) {
+	regexpIP := RegexpBase(RegexpExpressionIP)
+	for i := 0; i < b.N; i++ {
+		regexpIP("127.0.0.1")
 	}
 }
