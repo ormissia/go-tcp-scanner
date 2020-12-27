@@ -19,3 +19,11 @@ func StringRegexp(regexpString, toBeTestString string) (matched bool) {
 	matched, _ = regexp.MatchString(regexpString, toBeTestString)
 	return
 }
+
+//使用闭包创建正则匹配方法
+func RegexpBase(regexpString string) func(toBeTestString string) (matched bool) {
+	return func(toBeTestString string) (matched bool) {
+		matched, _ = regexp.MatchString(regexpString, toBeTestString)
+		return
+	}
+}

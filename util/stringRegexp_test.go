@@ -8,14 +8,16 @@ import (
 	"testing"
 )
 
-func TestStringRegexp(t *testing.T) {
-	//测试用例
-	tests := []struct {
-		regexpString   string
-		toBeTestString string
-		matched        bool
-	}{
-		//IP
+type testDate struct {
+	regexpString   string
+	toBeTestString string
+	matched        bool
+}
+
+//测试用例
+var (
+	//IP
+	testDateIP = []testDate{
 		{RegexpExpressionIP, "127.0.0.1", true},
 		{RegexpExpressionIP, "1.0.0.1", true},
 		{RegexpExpressionIP, "255.255.255.255", true},
@@ -26,17 +28,47 @@ func TestStringRegexp(t *testing.T) {
 		{RegexpExpressionIP, "255.255.255", false},
 		{RegexpExpressionIP, "a.b.c.d", false},
 		{RegexpExpressionIP, "^&*^*.&(*,(*&.^)*.@#$.0", false},
-		//域名
+	}
+	//域名
+	testDateDomainName = []testDate{
 		{RegexpExpressionDomainName, "www.baidu.com", true},
 		{RegexpExpressionDomainName, "baidu.com", true},
 		{RegexpExpressionDomainName, "bai-du.com", true},
 		{RegexpExpressionDomainName, "baidu.123", true},
 		{RegexpExpressionDomainName, "baidu", false},
 	}
+)
 
-	for _, tt := range tests {
+func TestStringRegexp(t *testing.T) {
+	//测试IP正则
+	for _, tt := range testDateIP {
 		if matched := StringRegexp(tt.regexpString, tt.toBeTestString); matched != tt.matched {
-			t.Errorf("TestStringRegexp(,%s),got %t, but %t", tt.toBeTestString, matched, tt.matched)
+			t.Errorf("TestStringRegexp(RegexpExpressionIP,%s),got %t, but %t", tt.toBeTestString, matched, tt.matched)
+		}
+	}
+
+	//测试域名正则
+	for _, tt := range testDateDomainName {
+		if matched := StringRegexp(tt.regexpString, tt.toBeTestString); matched != tt.matched {
+			t.Errorf("TestStringRegexp(RegexpExpressionDomainName,%s),got %t, but %t", tt.toBeTestString, matched, tt.matched)
+		}
+	}
+}
+
+func TestRegexpBase(t *testing.T) {
+	//测试IP正则
+	for _, tt := range testDateIP {
+		regexpIP := RegexpBase(RegexpExpressionIP)
+		if matched := regexpIP(tt.toBeTestString); matched != tt.matched {
+			t.Errorf("TestStringRegexp(RegexpExpressionIP,%s),got %t, but %t", tt.toBeTestString, matched, tt.matched)
+		}
+	}
+
+	//测试域名正则
+	for _, tt := range testDateDomainName {
+		regexpDomainName := RegexpBase(RegexpExpressionDomainName)
+		if matched := regexpDomainName(tt.toBeTestString); matched != tt.matched {
+			t.Errorf("TestStringRegexp(RegexpExpressionDomainName,%s),got %t, but %t", tt.toBeTestString, matched, tt.matched)
 		}
 	}
 }
